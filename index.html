@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AshaAI Chat</title>
+
+    <!-- update the version number as needed -->
+    <script defer src="/__/firebase/11.6.1/firebase-app-compat.js"></script>
+    <script defer src="/__/firebase/11.6.1/firebase-auth-compat.js"></script>
+    <script defer src="/__/firebase/11.6.1/firebase-functions-compat.js"></script>
+    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+
+    <style media="screen">
+      body { 
+        background: #f5f5f5; 
+        color: rgba(0,0,0,0.87); 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        margin: 0; 
+        padding: 0; 
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      header {
+        background: #4285f4;
+        color: white;
+        padding: 16px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 400;
+      }
+      
+      .chat-container {
+        flex: 1;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      
+      .message {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        line-height: 1.4;
+        word-wrap: break-word;
+      }
+      
+      .user-message {
+        align-self: flex-end;
+        background: #4285f4;
+        color: white;
+        border-radius: 18px 18px 0 18px;
+      }
+      
+      .bot-message {
+        align-self: flex-start;
+        background: white;
+        color: #333;
+        border-radius: 18px 18px 18px 0;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      }
+      
+      .input-area {
+        display: flex;
+        padding: 8px;
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      }
+      
+      #user-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        padding: 12px 16px;
+        font-size: 16px;
+        border-radius: 24px;
+        font-family: inherit;
+      }
+      
+      #send-button {
+        background: #4285f4;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
+      }
+      
+      #send-button:hover {
+        background: #3367d6;
+      }
+      
+      .thinking {
+        align-self: flex-start;
+        background: #f1f1f1;
+        color: #777;
+        padding: 12px 16px;
+        border-radius: 18px 18px 18px 0;
+        display: none;
+      }
+      
+      .thinking.active {
+        display: block;
+        display: flex;
+        align-items: center;
+      }
+      
+      .dot-flashing {
+        position: relative;
+        width: 8px;
+        height: 8px;
+        border-radius: 5px;
+        background-color: #888;
+        color: #888;
+        animation: dot-flashing 1s infinite linear alternate;
+        animation-delay: 0.5s;
+        margin: 0 4px;
+      }
+      
+      .dot-flashing::before, .dot-flashing::after {
+        content: '';
+        display: inline-block;
+        position: absolute;
+        top: 0;
+      }
+      
+      .dot-flashing::before {
+        left: -12px;
+        width: 8px;
+        height: 8px;
+        border-radius: 5px;
+        background-color: #888;
+        color: #888;
+        animation: dot-flashing 1s infinite alternate;
+        animation-delay: 0s;
+      }
+      
+      .dot-flashing::after {
+        left: 12px;
+        width: 8px;
+        height: 8px;
+        border-radius: 5px;
+        background-color: #888;
+        color: #888;
+        animation: dot-flashing 1s infinite alternate;
+        animation-delay: 1s;
+      }
+      
+      @keyframes dot-flashing {
+        0% {
+          background-color: #888;
+        }
+        50%, 100% {
+          background-color: rgba(136, 136, 136, 0.2);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>AshaAI Assistant</h1>
+    </header>
+    
+    <div class="chat-container">
+      <div class="messages" id="messages">
+        <div class="message bot-message">
+          Hello! How can I help you today?
+        </div>
+      </div>
+      
+      <div class="thinking" id="thinking">
+        <span>Thinking</span>
+        <div class="dot-flashing"></div>
+      </div>
+      
+      <div class="input-area">
+        <input type="text" id="user-input" placeholder="Type your message here..." />
+        <button id="send-button">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.01 21L23 12 2.01 3 2 10L17 12 2 14L2.01 21Z" fill="white"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const messagesContainer = document.getElementById('messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const thinking = document.getElementById('thinking');
+        
+        // Function to add a message to the chat
+        function addMessage(text, isUser) {
+          const messageDiv = document.createElement('div');
+          messageDiv.className = isUser ? 'message user-message' : 'message bot-message';
+          messageDiv.textContent = text;
+          messagesContainer.appendChild(messageDiv);
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Function to call the Firebase function
+        function callAgentFunction(query) {
+          thinking.classList.add('active');
+          
+          // Get the Firebase Functions instance
+          const functions = firebase.functions();
+          
+          // Using the local emulator
+          if (window.location.hostname === "localhost") {
+            functions.useEmulator("localhost", 5001);
+          }
+          
+          // Call the Cloud Function
+          const ashaaI2Agent = functions.httpsCallable('ashaaI2_agent');
+          
+          ashaaI2Agent({ query: query })
+            .then((result) => {
+              thinking.classList.remove('active');
+              
+              // Add the response from the agent to the chat
+              const response = result.data.response || result.data;
+              addMessage(response, false);
+            })
+            .catch((error) => {
+              thinking.classList.remove('active');
+              console.error(error);
+              addMessage("Sorry, there was an error processing your request.", false);
+            });
+        }
+        
+        // Handle send button click
+        sendButton.addEventListener('click', () => {
+          const query = userInput.value.trim();
+          if (query) {
+            addMessage(query, true);
+            userInput.value = '';
+            callAgentFunction(query);
+          }
+        });
+        
+        // Handle Enter key press
+        userInput.addEventListener('keypress', (event) => {
+          if (event.key === 'Enter') {
+            const query = userInput.value.trim();
+            if (query) {
+              addMessage(query, true);
+              userInput.value = '';
+              callAgentFunction(query);
+            }
+          }
+        });
+        
+        // Focus the input field on load
+        userInput.focus();
+      });
+    </script>
+  </body>
+</html>
