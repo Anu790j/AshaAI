@@ -463,6 +463,8 @@
         z-index: 100;
         max-width: 90%;
         width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
         opacity: 0;
         visibility: hidden;
         transition: all 0.3s ease;
@@ -509,6 +511,40 @@
         color: var(--dark-gray);
       }
       
+      /* Agent info specific styles */
+      .agent-info .agent-diagram {
+        padding: 10px 0;
+        margin: 10px 0;
+      }
+      
+      .agent-info .agent-box {
+        padding: 8px 12px;
+        margin: 6px auto;
+        width: 90%;
+      }
+      
+      .agent-info .agent-box h3 {
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+      
+      .agent-info .agent-box p {
+        font-size: 12px;
+        margin: 0;
+      }
+      
+      .agent-info .agent-diagram-main {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+        margin: 10px 0;
+      }
+      
+      .agent-info .agent-diagram-main .agent-box {
+        width: 45%;
+        min-width: 120px;
+      }
+      
       /* Responsive adjustments */
       @media (max-width: 640px) {
         .chat-container {
@@ -541,6 +577,17 @@
           flex-direction: column;
           align-items: center;
         }
+        
+        .agent-info {
+          max-height: 80vh;
+          width: 95%;
+          overflow-y: auto;
+        }
+        
+        .agent-box {
+          width: 90%;
+          margin: 8px auto;
+        }
       }
       
       @media (min-width: 1024px) {
@@ -550,6 +597,12 @@
         
         .message {
           max-width: 75%;
+        }
+        
+        .agent-info {
+          max-height: 85vh;
+          width: 450px;
+          overflow-y: auto;
         }
       }
     </style>
@@ -844,6 +897,21 @@
         infoButton.addEventListener('click', () => {
           agentInfo.classList.add('active');
           agentInfoOverlay.classList.add('active');
+          
+          // Reset all boxes to hidden state first
+          agentInfoBoxes.forEach(box => {
+            box.style.opacity = 0;
+            box.style.transform = 'translateY(20px)';
+          });
+          
+          // Animate boxes sequentially
+          const boxes = Array.from(agentInfoBoxes);
+          boxes.forEach((box, index) => {
+            setTimeout(() => {
+              box.style.opacity = 1;
+              box.style.transform = 'translateY(0)';
+            }, 300 + (index * 200)); // 300ms initial delay, then 200ms between each box
+          });
         });
         
         // Close info modal
