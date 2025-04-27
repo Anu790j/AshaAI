@@ -14,12 +14,15 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
       :root {
         --primary-color: #4F46E5;
         --primary-hover: #4338CA;
+        --secondary-color: #10B981;
+        --tertiary-color: #F59E0B;
+        --quaternary-color: #EF4444;
         --bg-color: #F9FAFB;
         --text-color: #1F2937;
         --light-gray: #F3F4F6;
@@ -28,7 +31,9 @@
         --message-radius: 18px;
         --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
         --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        --vh: 1vh;
       }
       
       * {
@@ -50,6 +55,7 @@
         display: flex;
         flex-direction: column;
         transition: background-color 0.3s ease;
+        position: relative;
       }
       
       header {
@@ -60,6 +66,9 @@
         box-shadow: var(--shadow-md);
         position: relative;
         z-index: 10;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
       
       h1 {
@@ -67,6 +76,20 @@
         font-size: 20px;
         font-weight: 600;
         letter-spacing: -0.025em;
+      }
+      
+      .info-icon {
+        width: 24px;
+        height: 24px;
+        margin-left: 8px;
+        cursor: pointer;
+        opacity: 0.9;
+        transition: all 0.2s ease;
+      }
+      
+      .info-icon:hover {
+        opacity: 1;
+        transform: scale(1.1);
       }
       
       .chat-container {
@@ -276,6 +299,216 @@
         }
       }
       
+      /* Intro modal styles */
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+      
+      .overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+      
+      .intro-modal {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 24px;
+        max-width: 90%;
+        width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        transform: translateY(20px);
+        opacity: 0;
+        transition: all 0.4s ease;
+      }
+      
+      .overlay.active .intro-modal {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      
+      .modal-header {
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      
+      .modal-header h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 8px;
+      }
+      
+      .modal-header p {
+        color: var(--dark-gray);
+        font-size: 0.95rem;
+      }
+      
+      .modal-content {
+        margin-bottom: 24px;
+      }
+      
+      .agent-diagram {
+        width: 100%;
+        padding: 20px;
+        position: relative;
+        margin: 20px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .agent-box {
+        background: white;
+        padding: 12px 16px;
+        border-radius: 12px;
+        box-shadow: var(--shadow-md);
+        margin: 10px;
+        text-align: center;
+        width: 80%;
+        max-width: 300px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.5s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+      }
+      
+      .agent-box.active {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      
+      .agent-box h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      
+      .agent-box p {
+        font-size: 14px;
+        color: var(--dark-gray);
+      }
+      
+      .agent-diagram-main {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        margin: 20px 0;
+      }
+      
+      .agent-arrow {
+        position: absolute;
+        width: 40px;
+        height: 20px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.5s ease;
+      }
+      
+      .agent-arrow.active {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      
+      .close-modal {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        display: block;
+        margin: 0 auto;
+        transition: all 0.2s ease;
+      }
+      
+      .close-modal:hover {
+        background: var(--primary-hover);
+        transform: translateY(-2px);
+      }
+      
+      .close-modal:active {
+        transform: translateY(0);
+      }
+      
+      /* Agent info tooltip */
+      .agent-info {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        background: white;
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-lg);
+        z-index: 100;
+        max-width: 90%;
+        width: 500px;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+      
+      .agent-info.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      
+      .agent-info-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+      
+      .agent-info-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+      
+      .agent-info h3 {
+        color: var(--primary-color);
+        margin-bottom: 12px;
+        font-size: 20px;
+      }
+      
+      .agent-info-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: var(--dark-gray);
+      }
+      
       /* Responsive adjustments */
       @media (max-width: 640px) {
         .chat-container {
@@ -303,6 +536,11 @@
           padding: 10px 0;
           font-size: 15px;
         }
+        
+        .agent-diagram-main {
+          flex-direction: column;
+          align-items: center;
+        }
       }
       
       @media (min-width: 1024px) {
@@ -319,6 +557,11 @@
   <body>
     <header>
       <h1>AshaAI Assistant</h1>
+      <div class="info-icon" id="info-button">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+        </svg>
+      </div>
     </header>
     
     <div class="chat-container">
@@ -346,6 +589,114 @@
         </div>
       </div>
     </div>
+    
+    <!-- Agent Information Overlay -->
+    <div class="agent-info-overlay" id="agent-info-overlay"></div>
+    <div class="agent-info" id="agent-info">
+      <button class="agent-info-close" id="agent-info-close">&times;</button>
+      <h3>AshaAI Architecture</h3>
+      <p>AshaAI uses an advanced multi-agent architecture powered by Google ADK and Gemini:</p>
+      <div class="agent-diagram">
+        <div class="agent-box" style="background-color: #F3F4F6;">
+          <h3>User Input</h3>
+          <p>Your messages and requests</p>
+        </div>
+        <div class="agent-box" style="background-color: #E0F2FE;">
+          <h3>Security Agent</h3>
+          <p>Checks for security issues, bias, or sensitive content</p>
+        </div>
+        <div class="agent-box" style="background-color: #DBEAFE;">
+          <h3>Router Agent</h3>
+          <p>Decides which specialized agent to use based on your query</p>
+        </div>
+        <div class="agent-diagram-main">
+          <div class="agent-box" style="background-color: #E0F2FE;">
+            <h3>Job Search Agent</h3>
+            <p>Finds job listings using local DB and web searches</p>
+          </div>
+          <div class="agent-box" style="background-color: #FEF3C7;">
+            <h3>Event Search Agent</h3>
+            <p>Searches for relevant events and meetups</p>
+          </div>
+          <div class="agent-box" style="background-color: #E0F2FE;">
+            <h3>Mentorship Search Agent</h3>
+            <p>Finds mentorship opportunities</p>
+          </div>
+        </div>
+        <div class="agent-box" style="background-color: #DBEAFE;">
+          <h3>Response</h3>
+          <p>The final answer crafted for you</p>
+        </div>
+      </div>
+      <p>This workflow is built with Google ADK and Gemini to deliver accurate, helpful responses to your questions.</p>
+    </div>
+
+    <!-- Introduction Modal -->
+    <div class="overlay" id="intro-overlay">
+      <div class="intro-modal">
+        <div class="modal-header">
+          <h2>Welcome to AshaAI</h2>
+          <p>Your intelligent assistant powered by advanced AI technology</p>
+        </div>
+        <div class="modal-content">
+          <p>AshaAI is built using a multi-agent architecture that allows it to handle a variety of tasks efficiently.</p>
+          
+          <div class="agent-diagram">
+            <div class="agent-box" id="intro-user">
+              <h3>User Input</h3>
+              <p>Your messages and requests</p>
+            </div>
+            
+            <svg class="agent-arrow" id="arrow1" width="20" height="40" viewBox="0 0 20 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="top: 80px; left: 50%; transform: translateX(-50%);">
+              <path d="M10 0L10 35M10 35L1 26M10 35L19 26" stroke="#6B7280" stroke-width="2"/>
+            </svg>
+            
+            <div class="agent-box" id="intro-security" style="background-color: #E0F2FE;">
+              <h3>Security Agent</h3>
+              <p>Checks for security issues, bias, or sensitive content</p>
+            </div>
+            
+            <svg class="agent-arrow" id="arrow2" width="20" height="40" viewBox="0 0 20 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="top: 180px; left: 50%; transform: translateX(-50%);">
+              <path d="M10 0L10 35M10 35L1 26M10 35L19 26" stroke="#6B7280" stroke-width="2"/>
+            </svg>
+            
+            <div class="agent-box" id="intro-router" style="background-color: #DBEAFE;">
+              <h3>Router Agent</h3>
+              <p>Decides which specialized agent to use based on your query</p>
+            </div>
+            
+            <div class="agent-diagram-main" id="specialized-agents">
+              <div class="agent-box" id="intro-job" style="background-color: #E0F2FE;">
+                <h3>Job Search Agent</h3>
+                <p>Finds job listings using local DB and web searches</p>
+              </div>
+              
+              <div class="agent-box" id="intro-event" style="background-color: #FEF3C7;">
+                <h3>Event Search Agent</h3>
+                <p>Searches for relevant events and meetups</p>
+              </div>
+              
+              <div class="agent-box" id="intro-mentor" style="background-color: #E0F2FE;">
+                <h3>Mentorship Search Agent</h3>
+                <p>Finds mentorship opportunities</p>
+              </div>
+            </div>
+            
+            <svg class="agent-arrow" id="arrow3" width="20" height="40" viewBox="0 0 20 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="bottom: 100px; left: 50%; transform: translateX(-50%);">
+              <path d="M10 0L10 35M10 35L1 26M10 35L19 26" stroke="#6B7280" stroke-width="2"/>
+            </svg>
+            
+            <div class="agent-box" id="intro-response" style="background-color: #DBEAFE;">
+              <h3>Response</h3>
+              <p>The final answer crafted for you</p>
+            </div>
+          </div>
+          
+          <p>This workflow is built with Google ADK and Gemini to deliver accurate, helpful responses to your questions.</p>
+        </div>
+        <button class="close-modal" id="close-intro">Got it!</button>
+      </div>
+    </div>
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {
@@ -353,6 +704,15 @@
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
         const thinking = document.getElementById('thinking');
+        const introOverlay = document.getElementById('intro-overlay');
+        const closeIntro = document.getElementById('close-intro');
+        const infoButton = document.getElementById('info-button');
+        const agentInfo = document.getElementById('agent-info');
+        const agentInfoOverlay = document.getElementById('agent-info-overlay');
+        const agentInfoClose = document.getElementById('agent-info-close');
+        
+        // Check if this is the first visit
+        const isFirstVisit = !localStorage.getItem('ashaai_visited');
         
         // Function to add a message to the chat
         function addMessage(text, isUser) {
@@ -376,32 +736,29 @@
           thinking.classList.add('active');
           scrollToBottom();
           
-          // Get the Firebase Functions instance
-          const functions = firebase.functions();
-          
-          // Using the local emulator
-          if (window.location.hostname === "localhost") {
-            functions.useEmulator("localhost", 5001);
-          }
-          
-          // Call the Cloud Function
-          const ashaaI2Agent = functions.httpsCallable('ashaaI2_agent');
-          
-          ashaaI2Agent({ query: query })
-            .then((result) => {
-              // Hide typing indicator
-              thinking.classList.remove('active');
-              
-              // Add the response from the agent to the chat
-              const response = result.data.response || result.data;
-              addMessage(response, false);
-            })
-            .catch((error) => {
-              // Hide typing indicator
-              thinking.classList.remove('active');
-              console.error(error);
-              addMessage("Sorry, there was an error processing your request. Please try again later.", false);
-            });
+          // Always use the production URL
+          fetch('https://us-central1-ashaai-2dd79.cloudfunctions.net/ashaaI2_agent', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: query })
+          })
+          .then(response => response.json())
+          .then(data => {
+            // Hide typing indicator
+            thinking.classList.remove('active');
+            
+            // Add the response from the agent to the chat
+            const response = data.response || data;
+            addMessage(response, false);
+          })
+          .catch(error => {
+            // Hide typing indicator
+            thinking.classList.remove('active');
+            console.error(error);
+            addMessage("Sorry, there was an error processing your request. Please try again later.", false);
+          });
         }
         
         // Function to handle sending a message
@@ -422,6 +779,48 @@
           if (event.key === 'Enter') {
             sendMessage();
           }
+        });
+        
+        // Show info modal when info button is clicked
+        infoButton.addEventListener('click', () => {
+          agentInfo.classList.add('active');
+          agentInfoOverlay.classList.add('active');
+        });
+        
+        // Close info modal
+        agentInfoClose.addEventListener('click', () => {
+          agentInfo.classList.remove('active');
+          agentInfoOverlay.classList.remove('active');
+        });
+        
+        agentInfoOverlay.addEventListener('click', () => {
+          agentInfo.classList.remove('active');
+          agentInfoOverlay.classList.remove('active');
+        });
+        
+        // Show intro modal for first-time visitors
+        if (isFirstVisit) {
+          introOverlay.classList.add('active');
+          
+          // Animate agent boxes in sequence
+          setTimeout(() => document.getElementById('intro-user').classList.add('active'), 500);
+          setTimeout(() => document.getElementById('arrow1').classList.add('active'), 1000);
+          setTimeout(() => document.getElementById('intro-security').classList.add('active'), 1500);
+          setTimeout(() => document.getElementById('arrow2').classList.add('active'), 2000);
+          setTimeout(() => document.getElementById('intro-router').classList.add('active'), 2500);
+          setTimeout(() => document.getElementById('intro-job').classList.add('active'), 3000);
+          setTimeout(() => document.getElementById('intro-event').classList.add('active'), 3500);
+          setTimeout(() => document.getElementById('intro-mentor').classList.add('active'), 4000);
+          setTimeout(() => document.getElementById('arrow3').classList.add('active'), 4500);
+          setTimeout(() => document.getElementById('intro-response').classList.add('active'), 5000);
+          
+          // Set a flag in localStorage to remember that the user has seen the intro
+          localStorage.setItem('ashaai_visited', 'true');
+        }
+        
+        // Close intro modal
+        closeIntro.addEventListener('click', () => {
+          introOverlay.classList.remove('active');
         });
         
         // Focus the input field on load
