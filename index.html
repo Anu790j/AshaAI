@@ -10,7 +10,7 @@
     <script defer src="/__/firebase/11.6.1/firebase-auth-compat.js"></script>
     <script defer src="/__/firebase/11.6.1/firebase-functions-compat.js"></script>
     <script defer src="/__/firebase/init.js?useEmulator=true"></script>
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -711,6 +711,49 @@
         const agentInfoOverlay = document.getElementById('agent-info-overlay');
         const agentInfoClose = document.getElementById('agent-info-close');
         
+        // Fix for agent-info - make sure all boxed are visible
+        const agentInfoBoxes = agentInfo.querySelectorAll('.agent-box');
+        agentInfoBoxes.forEach(box => {
+          box.style.opacity = 1;
+          box.style.transform = 'translateY(0)';
+        });
+        
+        // Common queries database - respond locally without backend call
+        const commonResponses = {
+          "hi": "Hello! I'm AshaAI. How can I help you today?",
+          "hello": "Hi there! I'm AshaAI, your AI assistant. What can I do for you?",
+          "hey": "Hey! I'm AshaAI. What can I help you with today?",
+          "who are you": "I'm AshaAI, an intelligent assistant powered by Google ADK and Gemini. I can help with searches, answer questions, and perform calculations. My architecture uses a multi-agent system that routes your questions to specialized sub-agents for the best response.",
+          "what is your name": "My name is AshaAI. I'm your AI assistant designed to help with various tasks!",
+          "what can you do": "I can help with several things using my multi-agent architecture: search for information on the web, answer general knowledge questions, make calculations, and have conversations. Just ask me anything, and I'll do my best to assist you!",
+          "how do you work": "I work using a sophisticated multi-agent architecture powered by Google ADK and Gemini. When you ask a question, my coordinator agent routes it to specialized sub-agents: a greeter for conversations, a search agent for factual information, or a calculator agent for math problems. This helps me provide accurate and helpful responses.",
+          "what's your purpose": "My purpose is to assist you with finding information, answering questions, and having helpful conversations. I'm designed to be your AI companion for knowledge and assistance.",
+          "help": "I can help you find information, answer questions, or just chat. Try asking me about a topic you're interested in, or ask me to calculate something for you.",
+          "thanks": "You're welcome! If you need anything else, just ask.",
+          "thank you": "You're welcome! I'm happy to help.",
+        };
+        
+        // Function to find the best matching response from common queries
+        function findBestResponse(query) {
+          // Normalize the query
+          const normalizedQuery = query.toLowerCase().trim();
+          
+          // Direct match
+          if (commonResponses[normalizedQuery]) {
+            return commonResponses[normalizedQuery];
+          }
+          
+          // Partial match - check if query contains any of the keys
+          for (const [key, response] of Object.entries(commonResponses)) {
+            if (normalizedQuery.includes(key) || key.includes(normalizedQuery)) {
+              return response;
+            }
+          }
+          
+          // No match found
+          return null;
+        }
+        
         // Check if this is the first visit
         const isFirstVisit = !localStorage.getItem('ashaai_visited');
         
@@ -732,7 +775,23 @@
         
         // Function to call the Firebase function
         function callAgentFunction(query) {
-          // Show typing indicator
+          // Check if we have a local response for this query
+          const localResponse = findBestResponse(query);
+          
+          if (localResponse) {
+            // Simulate thinking for a short time to make it feel natural
+            thinking.classList.add('active');
+            scrollToBottom();
+            
+            setTimeout(() => {
+              thinking.classList.remove('active');
+              addMessage(localResponse, false);
+            }, 600 + Math.random() * 1000); // Random delay between 600-1600ms for natural feel
+            
+            return;
+          }
+          
+          // If no local response, proceed with backend call
           thinking.classList.add('active');
           scrollToBottom();
           
