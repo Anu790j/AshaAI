@@ -136,6 +136,7 @@
         scroll-behavior: smooth;
         -ms-overflow-style: none;  /* Internet Explorer and Edge */
         scrollbar-width: none;  /* Firefox */
+        padding: 10px 0;
       }
       
       .messages::-webkit-scrollbar {
@@ -154,19 +155,41 @@
       
       .message {
         max-width: 85%;
-        padding: 12px 16px;
+        padding: 16px 20px;
         border-radius: var(--message-radius);
-        line-height: 1.5;
+        line-height: 1.6;
         word-wrap: break-word;
         animation: fadeIn 0.3s ease;
         font-size: 0.95rem;
         position: relative;
+        margin-bottom: 8px;
+      }
+      
+      .message p {
+        margin: 0 0 12px 0;
+      }
+      
+      .message p:last-child {
+        margin-bottom: 0;
+      }
+      
+      .message ul {
+        margin: 8px 0;
+        padding-left: 20px;
+      }
+      
+      .message ul li {
+        margin-bottom: 4px;
+      }
+      
+      .message strong {
+        font-weight: 600;
       }
       
       .message .copy-button {
         position: absolute;
-        top: 8px;
-        right: 8px;
+        top: 12px;
+        right: 12px;
         background-color: transparent;
         border: none;
         color: var(--dark-gray);
@@ -345,6 +368,18 @@
       
       #send-button:active {
         transform: scale(0.95);
+      }
+      
+      #send-button.disabled {
+        background: var(--dark-gray);
+        cursor: not-allowed;
+        transform: scale(1);
+        opacity: 0.7;
+      }
+      
+      #send-button.disabled:hover, #send-button.disabled:focus {
+        background: var(--dark-gray);
+        transform: scale(1);
       }
       
       #send-button::after {
@@ -1006,7 +1041,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
           </svg>
-        </div>
+    </div>
       </div>
     </header>
     
@@ -1170,7 +1205,7 @@
 
     <!-- Add Particles.js for the background -->
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    
+
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const messagesContainer = document.getElementById('messages');
@@ -1293,103 +1328,176 @@
         function addMessage(text, isUser) {
           const messageDiv = document.createElement('div');
           messageDiv.className = isUser ? 'message user-message' : 'message bot-message loading';
-          messageDiv.textContent = text;
           
-          // Add copy button to bot messages (not for user messages)
+          // Add original text as data attribute for copying later
           if (!isUser) {
-            // Create copy button
-            const copyButton = document.createElement('button');
-            copyButton.className = 'copy-button';
-            copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
-            copyButton.setAttribute('aria-label', 'Copy to clipboard');
-            copyButton.setAttribute('title', 'Copy to clipboard');
-            
-            // Add click event for copying
-            copyButton.addEventListener('click', () => {
-              navigator.clipboard.writeText(text).then(() => {
-                copyButton.classList.add('copied');
-                copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-                
-                setTimeout(() => {
-                  copyButton.classList.remove('copied');
-                  copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
-                }, 2000);
-              });
-            });
-            
-            messageDiv.appendChild(copyButton);
+            messageDiv.setAttribute('data-original-text', text);
           }
           
+          // For user messages, simply set the text content
+          if (isUser) {
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            smoothScrollToBottom();
+            return;
+          }
+          
+          // For bot messages, we need to handle Markdown and add the copy button
           messagesContainer.appendChild(messageDiv);
           
-          // For user messages, always scroll to bottom
-          if (isUser) {
-            smoothScrollToBottom();
-          }
+          // Create copy button
+          const copyButton = document.createElement('button');
+          copyButton.className = 'copy-button';
+          copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+          copyButton.setAttribute('aria-label', 'Copy to clipboard');
+          copyButton.setAttribute('title', 'Copy to clipboard');
           
-          // If it's a bot message, add the shimmer loading effect and then remove it
-          if (!isUser) {
-            // Add typed effect for bot messages
-            const originalText = text;
-            messageDiv.textContent = '';
+          // Add click event for copying
+          copyButton.addEventListener('click', function() {
+            const originalText = this.parentNode.getAttribute('data-original-text');
+            navigator.clipboard.writeText(originalText).then(() => {
+              this.classList.add('copied');
+              this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+              
+              setTimeout(() => {
+                this.classList.remove('copied');
+                this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+              }, 2000);
+            });
+          });
+          
+          messageDiv.appendChild(copyButton);
+          
+          // Function to convert markdown to HTML
+          function markdownToHtml(text) {
+            // Handle bold text (**text**)
+            let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             
-            // Re-append copy button after clearing text
-            if (messageDiv.querySelector('.copy-button')) {
-              const copyButton = messageDiv.querySelector('.copy-button');
-              messageDiv.appendChild(copyButton);
+            // Handle bullet points
+            html = html.replace(/^\s*\*\s+(.*?)$/gm, '<li>$1</li>');
+            html = html.replace(/<li>(.*?)<\/li>/g, '<ul><li>$1</li></ul>');
+            html = html.replace(/<\/ul>\s*<ul>/g, '');
+            
+            // Handle line breaks and paragraphs
+            html = html.replace(/\n\n/g, '</p><p>');
+            html = html.replace(/\n/g, '<br>');
+            
+            // Wrap in paragraph if not already
+            if (!html.startsWith('<p>')) {
+              html = '<p>' + html + '</p>';
             }
             
-            setTimeout(() => {
-              messageDiv.classList.remove('loading');
-              let i = 0;
-              const typingSpeed = 30; // ms per character
-              
-              // Remove all scroll event listeners
-              let userScrolledManually = false;
-              const scrollHandler = () => {
-                // Mark that user has manually scrolled
-                userScrolledManually = true;
-              };
-              
-              // Listen for scroll events once typing starts
-              messagesContainer.addEventListener('scroll', scrollHandler);
-              
-              const typeWriter = () => {
-                if (i < originalText.length) {
-                  // Ensure we're only updating the text node, not affecting the button
-                  if (messageDiv.childNodes.length > 0 && messageDiv.firstChild.nodeType === 3) {
-                    // If there's already a text node, update it
-                    messageDiv.firstChild.nodeValue += originalText.charAt(i);
-                  } else {
-                    // Otherwise, create a new text node and insert it at the beginning
-                    const textNode = document.createTextNode(originalText.charAt(i));
-                    messageDiv.insertBefore(textNode, messageDiv.firstChild);
-                  }
-                  
-                  i++;
-                  
-                  // Only auto-scroll if user hasn't manually scrolled
-                  if (!userScrolledManually) {
-                    // Use requestAnimationFrame to ensure scrolling doesn't block typing
-                    requestAnimationFrame(() => {
-                      // Check if near bottom before scrolling
-                      const isNearBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 100;
-                      if (isNearBottom) {
-                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                      }
-                    });
-                  }
-                  
-                  setTimeout(typeWriter, typingSpeed);
-                } else {
-                  // Cleanup when typing is finished
-                  messagesContainer.removeEventListener('scroll', scrollHandler);
-                }
-              };
-              
-              typeWriter();
-            }, 300);
+            return html;
           }
+          
+          // Disable send button during typing
+          const sendButton = document.getElementById('send-button');
+          const userInput = document.getElementById('user-input');
+          sendButton.classList.add('disabled');
+          sendButton.disabled = true;
+          userInput.disabled = true;
+          
+          // Start typing animation with a short delay
+          setTimeout(() => {
+            // Remove loading class
+            messageDiv.classList.remove('loading');
+            
+            // Convert markdown to HTML
+            const htmlContent = markdownToHtml(text);
+            
+            // Set up the typewriter effect
+            let visibleContent = '';
+            let contentWithoutTags = htmlContent.replace(/<[^>]*>/g, '');
+            let tagStack = [];
+            let currentTagBuffer = '';
+            let inTag = false;
+            let i = 0;
+            let contentIndex = 0;
+            
+            // Use a faster typing speed
+            const typingSpeed = 8; // ms per character
+            
+            function typeNextChar() {
+              if (i < htmlContent.length) {
+                const char = htmlContent[i];
+                
+                // Handle HTML tags
+                if (char === '<') {
+                  inTag = true;
+                  currentTagBuffer = '<';
+                } else if (inTag && char === '>') {
+                  inTag = false;
+                  currentTagBuffer += '>';
+                  
+                  // Check if it's a closing tag
+                  if (currentTagBuffer.indexOf('</') === 0) {
+                    tagStack.pop(); // Remove the last opening tag
+                  } else if (!currentTagBuffer.endsWith('/>')) {
+                    // If not a self-closing tag, add to stack
+                    tagStack.push(currentTagBuffer);
+                  }
+                  
+                  visibleContent += currentTagBuffer;
+                  currentTagBuffer = '';
+                } else if (inTag) {
+                  currentTagBuffer += char;
+                } else {
+                  // Regular character, not part of a tag
+                  visibleContent += char;
+                  contentIndex++;
+                }
+                
+                i++;
+                
+                // Update the HTML content
+                messageDiv.innerHTML = visibleContent;
+                
+                // Make sure copy button stays
+                if (messageDiv.querySelector('.copy-button') === null) {
+                  messageDiv.appendChild(copyButton);
+                }
+                
+                // Auto scroll if near bottom
+                const isNearBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 100;
+                if (isNearBottom) {
+                  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+                
+                // Continue typing with a small random delay for more natural effect
+                const randomVariation = Math.random() * 5;
+                setTimeout(typeNextChar, typingSpeed + randomVariation);
+              } else {
+                // Finished typing
+                // Make sure all tags are properly closed
+                while (tagStack.length > 0) {
+                  const tag = tagStack.pop();
+                  const tagName = tag.match(/<([a-z0-9]+)[\s>]/i)[1];
+                  visibleContent += `</${tagName}>`;
+                }
+                
+                // Final update
+                messageDiv.innerHTML = visibleContent;
+                
+                // Make sure copy button is still there
+                if (messageDiv.querySelector('.copy-button') === null) {
+                  messageDiv.appendChild(copyButton);
+                }
+                
+                // Final scroll to bottom
+                smoothScrollToBottom();
+                
+                // Re-enable send button after typing is complete
+                sendButton.classList.remove('disabled');
+                sendButton.disabled = false;
+                userInput.disabled = false;
+                userInput.focus();
+              }
+            }
+            
+            // Start the typing animation
+            typeNextChar();
+            
+          }, 300);
         }
         
         // Smooth scrolling function for better UX
@@ -1450,6 +1558,13 @@
           // Hide suggestions when a message is sent
           suggestionsContainer.classList.add('hidden');
           
+          // Disable send button during processing
+          const sendButton = document.getElementById('send-button');
+          const userInput = document.getElementById('user-input');
+          sendButton.classList.add('disabled');
+          sendButton.disabled = true;
+          userInput.disabled = true;
+          
           // Check if we have a local response for this query
           const localResponse = findBestResponse(query);
           
@@ -1474,21 +1589,48 @@
           scrollToBottom();
           
           // Always use the production URL
-          fetch('https://us-central1-ashaai-2dd79.cloudfunctions.net/ashaaI2_agent', {
+          fetch('https://ashaai2-agent-jllcirxkfq-uc.a.run.app', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ query: query })
           })
-          .then(response => response.json())
-          .then(data => {
+          .then(response => {
+            // Check the content type to determine how to parse the response
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+              return response.json().then(data => ({ isJson: true, data }));
+            } else {
+              return response.text().then(text => ({ isJson: false, data: text }));
+            }
+          })
+          .then(({ isJson, data }) => {
             // Hide typing indicator
             thinking.classList.remove('active');
             
-            // Add the response from the agent to the chat
-            const response = data.response || data;
-            addMessage(response, false);
+            let responseText = '';
+            
+            if (!isJson) {
+              // Direct text response
+              responseText = data;
+            } else {
+              // JSON response handling
+              if (typeof data === 'string') {
+                responseText = data;
+              } else if (data.response) {
+                responseText = data.response;
+              } else if (data.result) {
+                responseText = data.result;
+              } else {
+                // If we can't find a specific field, stringify the entire response
+                const stringified = JSON.stringify(data);
+                responseText = stringified.length < 10000 ? stringified : "Received a response but couldn't parse it properly.";
+              }
+            }
+            
+            console.log("API Response:", data);
+            addMessage(responseText, false);
             
             // Show new suggestions after a response
             setTimeout(showSuggestions, 1000);
@@ -1496,7 +1638,7 @@
           .catch(error => {
             // Hide typing indicator
             thinking.classList.remove('active');
-            console.error(error);
+            console.error("API Error:", error);
             addMessage("Sorry, there was an error processing your request. Please try again later.", false);
             
             // Show new suggestions after error
