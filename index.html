@@ -134,21 +134,22 @@
         gap: 16px;
         padding-right: 8px;
         scroll-behavior: smooth;
+        -ms-overflow-style: none;  /* Internet Explorer and Edge */
+        scrollbar-width: none;  /* Firefox */
       }
       
       .messages::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
+        display: none; /* Chrome, Safari, Opera */
+        width: 0;
+        height: 0;
       }
       
       .messages::-webkit-scrollbar-track {
-        background: transparent;
+        display: none;
       }
       
       .messages::-webkit-scrollbar-thumb {
-        background: var(--dark-gray);
-        border-radius: 10px;
-        opacity: 0.5;
+        display: none;
       }
       
       .message {
@@ -159,6 +160,50 @@
         word-wrap: break-word;
         animation: fadeIn 0.3s ease;
         font-size: 0.95rem;
+        position: relative;
+      }
+      
+      .message .copy-button {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background-color: transparent;
+        border: none;
+        color: var(--dark-gray);
+        opacity: 0;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        cursor: pointer;
+        border-radius: 50%;
+        padding: 4px;
+        transform: scale(0.9);
+        z-index: 2;
+      }
+      
+      .message:hover .copy-button {
+        opacity: 0.7;
+      }
+      
+      .message .copy-button:hover {
+        opacity: 1;
+        transform: scale(1);
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+      
+      .message .copy-button.copied {
+        color: var(--secondary-color);
+        opacity: 1;
+      }
+      
+      [data-theme="dark"] .message .copy-button {
+        color: rgba(255, 255, 255, 0.7);
+      }
+      
+      [data-theme="dark"] .message .copy-button:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+      
+      [data-theme="dark"] .message .copy-button.copied {
+        color: var(--secondary-color);
       }
       
       @keyframes fadeIn {
@@ -229,6 +274,11 @@
         box-shadow: 0 0 0 2px var(--primary-color), var(--shadow-md);
       }
       
+      .input-actions {
+        display: flex;
+        align-items: center;
+      }
+      
       #user-input {
         flex: 1;
         border: none;
@@ -245,6 +295,31 @@
         opacity: 0.7;
       }
       
+      #voice-button {
+        background: none;
+        border: none;
+        color: var(--dark-gray);
+        width: 34px;
+        height: 34px;
+        cursor: pointer;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        margin-right: 4px;
+      }
+      
+      #voice-button:hover {
+        color: var(--primary-color);
+        background-color: var(--light-gray);
+      }
+      
+      #voice-button.listening {
+        color: var(--quaternary-color);
+        animation: pulse 1.5s infinite;
+      }
+      
       #send-button {
         background: var(--primary-color);
         color: white;
@@ -252,7 +327,7 @@
         border-radius: 50%;
         width: 40px;
         height: 40px;
-        margin-left: 8px;
+        margin-left: 4px;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -656,6 +731,13 @@
           width: 90%;
           margin: 8px auto;
         }
+        
+        .suggestions-toggle {
+          width: 32px;
+          height: 32px;
+          padding: 6px;
+          background-color: rgba(79, 70, 229, 0.1);
+        }
       }
       
       @media (min-width: 1024px) {
@@ -783,6 +865,7 @@
         padding: 12px 0;
         opacity: 1;
         transition: opacity 0.3s ease, transform 0.3s ease;
+        position: relative;
       }
       
       .suggestions.hidden {
@@ -791,10 +874,46 @@
         pointer-events: none;
       }
       
+      .suggestions.collapsed {
+        max-height: 40px;
+        overflow: hidden;
+      }
+      
       .suggestions-label {
         font-size: 0.85rem;
         color: var(--dark-gray);
         margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      
+      .suggestions-toggle {
+        background: none;
+        border: none;
+        color: var(--primary-color);
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        transition: all 0.2s ease;
+        z-index: 2;
+      }
+      
+      .suggestions-toggle:hover {
+        background-color: rgba(79, 70, 229, 0.1);
+      }
+      
+      .suggestions-toggle svg {
+        transition: transform 0.3s ease;
+      }
+      
+      .suggestions.collapsed .suggestions-toggle svg {
+        transform: rotate(180deg);
       }
       
       .suggestions-list {
@@ -906,7 +1025,14 @@
       </div>
       
       <div class="suggestions" id="suggestions-container">
-        <div class="suggestions-label">Try asking:</div>
+        <div class="suggestions-label">
+          <span>Try asking:</span>
+          <button class="suggestions-toggle" id="suggestions-toggle" aria-label="Toggle suggestions">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
         <div class="suggestions-list" id="suggestions-list">
           <!-- Suggestion chips will be added here -->
         </div>
@@ -915,11 +1041,21 @@
       <div class="input-container">
         <div class="input-area">
           <input type="text" id="user-input" placeholder="Type your message here..." />
-          <button id="send-button" aria-label="Send message">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M2.01 21L23 12 2.01 3 2 10L17 12 2 14L2.01 21Z" fill="white"/>
-            </svg>
-          </button>
+          <div class="input-actions">
+            <button id="voice-button" aria-label="Voice input">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>
+            </button>
+            <button id="send-button" aria-label="Send message">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2.01 21L23 12 2.01 3 2 10L17 12 2 14L2.01 21Z" fill="white"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1040,6 +1176,7 @@
         const messagesContainer = document.getElementById('messages');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
+        const voiceButton = document.getElementById('voice-button');
         const thinking = document.getElementById('thinking');
         const introOverlay = document.getElementById('intro-overlay');
         const closeIntro = document.getElementById('close-intro');
@@ -1049,6 +1186,7 @@
         const agentInfoClose = document.getElementById('agent-info-close');
         const suggestionsContainer = document.getElementById('suggestions-container');
         const suggestionsList = document.getElementById('suggestions-list');
+        const suggestionsToggle = document.getElementById('suggestions-toggle');
         
         // Fix for agent-info - make sure all boxed are visible
         const agentInfoBoxes = agentInfo.querySelectorAll('.agent-box');
@@ -1156,8 +1294,38 @@
           const messageDiv = document.createElement('div');
           messageDiv.className = isUser ? 'message user-message' : 'message bot-message loading';
           messageDiv.textContent = text;
+          
+          // Add copy button to bot messages (not for user messages)
+          if (!isUser) {
+            // Create copy button
+            const copyButton = document.createElement('button');
+            copyButton.className = 'copy-button';
+            copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+            copyButton.setAttribute('aria-label', 'Copy to clipboard');
+            copyButton.setAttribute('title', 'Copy to clipboard');
+            
+            // Add click event for copying
+            copyButton.addEventListener('click', () => {
+              navigator.clipboard.writeText(text).then(() => {
+                copyButton.classList.add('copied');
+                copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                
+                setTimeout(() => {
+                  copyButton.classList.remove('copied');
+                  copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+                }, 2000);
+              });
+            });
+            
+            messageDiv.appendChild(copyButton);
+          }
+          
           messagesContainer.appendChild(messageDiv);
-          scrollToBottom();
+          
+          // For user messages, always scroll to bottom
+          if (isUser) {
+            smoothScrollToBottom();
+          }
           
           // If it's a bot message, add the shimmer loading effect and then remove it
           if (!isUser) {
@@ -1165,17 +1333,57 @@
             const originalText = text;
             messageDiv.textContent = '';
             
+            // Re-append copy button after clearing text
+            if (messageDiv.querySelector('.copy-button')) {
+              const copyButton = messageDiv.querySelector('.copy-button');
+              messageDiv.appendChild(copyButton);
+            }
+            
             setTimeout(() => {
               messageDiv.classList.remove('loading');
               let i = 0;
               const typingSpeed = 30; // ms per character
               
+              // Remove all scroll event listeners
+              let userScrolledManually = false;
+              const scrollHandler = () => {
+                // Mark that user has manually scrolled
+                userScrolledManually = true;
+              };
+              
+              // Listen for scroll events once typing starts
+              messagesContainer.addEventListener('scroll', scrollHandler);
+              
               const typeWriter = () => {
                 if (i < originalText.length) {
-                  messageDiv.textContent += originalText.charAt(i);
+                  // Ensure we're only updating the text node, not affecting the button
+                  if (messageDiv.childNodes.length > 0 && messageDiv.firstChild.nodeType === 3) {
+                    // If there's already a text node, update it
+                    messageDiv.firstChild.nodeValue += originalText.charAt(i);
+                  } else {
+                    // Otherwise, create a new text node and insert it at the beginning
+                    const textNode = document.createTextNode(originalText.charAt(i));
+                    messageDiv.insertBefore(textNode, messageDiv.firstChild);
+                  }
+                  
                   i++;
-                  scrollToBottom();
+                  
+                  // Only auto-scroll if user hasn't manually scrolled
+                  if (!userScrolledManually) {
+                    // Use requestAnimationFrame to ensure scrolling doesn't block typing
+                    requestAnimationFrame(() => {
+                      // Check if near bottom before scrolling
+                      const isNearBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 100;
+                      if (isNearBottom) {
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                      }
+                    });
+                  }
+                  
                   setTimeout(typeWriter, typingSpeed);
+                } else {
+                  // Cleanup when typing is finished
+                  messagesContainer.removeEventListener('scroll', scrollHandler);
                 }
               };
               
@@ -1184,11 +1392,17 @@
           }
         }
         
+        // Smooth scrolling function for better UX
+        function smoothScrollToBottom() {
+          messagesContainer.scrollTo({
+            top: messagesContainer.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+        
         // Function to scroll to the bottom of the messages
         function scrollToBottom() {
-          setTimeout(() => {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-          }, 50);
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
         
         // Suggested queries for better UX
@@ -1303,10 +1517,14 @@
         // Handle send button click
         sendButton.addEventListener('click', sendMessage);
         
-        // Handle Enter key press
+        // Handle Enter key press with modifier key support
         userInput.addEventListener('keypress', (event) => {
           if (event.key === 'Enter') {
-            sendMessage();
+            // Only trigger send on Enter without Shift key
+            if (!event.shiftKey) {
+              event.preventDefault();
+              sendMessage();
+            }
           }
         });
         
@@ -1535,6 +1753,61 @@
             lightIcon.style.display = 'block';
             darkIcon.style.display = 'none';
           }
+        }
+
+        // Toggle suggestions collapse/expand
+        suggestionsToggle.addEventListener('click', () => {
+          suggestionsContainer.classList.toggle('collapsed');
+          
+          // Save preference
+          const isCollapsed = suggestionsContainer.classList.contains('collapsed');
+          localStorage.setItem('ashaai_suggestions_collapsed', isCollapsed ? 'true' : 'false');
+        });
+        
+        // Check for saved suggestion collapse preference
+        const savedSuggestionsCollapsed = localStorage.getItem('ashaai_suggestions_collapsed');
+        if (savedSuggestionsCollapsed === 'true') {
+          suggestionsContainer.classList.add('collapsed');
+        }
+
+        // Voice input functionality
+        let recognition;
+        
+        // Check if SpeechRecognition is supported
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+          recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+          recognition.continuous = false;
+          recognition.interimResults = false;
+          recognition.lang = 'en-US';
+          
+          recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            userInput.value = transcript;
+            voiceButton.classList.remove('listening');
+          };
+          
+          recognition.onend = () => {
+            voiceButton.classList.remove('listening');
+          };
+          
+          recognition.onerror = (event) => {
+            voiceButton.classList.remove('listening');
+            console.error('Speech recognition error', event.error);
+          };
+          
+          // Add voice button functionality
+          voiceButton.addEventListener('click', () => {
+            if (voiceButton.classList.contains('listening')) {
+              recognition.stop();
+              voiceButton.classList.remove('listening');
+            } else {
+              recognition.start();
+              voiceButton.classList.add('listening');
+            }
+          });
+        } else {
+          // Hide voice button if not supported
+          voiceButton.style.display = 'none';
         }
       });
     </script>
