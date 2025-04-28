@@ -36,6 +36,18 @@
         --vh: 1vh;
       }
       
+      [data-theme="dark"] {
+        --primary-color: #6366F1;
+        --primary-hover: #818CF8;
+        --bg-color: #111827;
+        --text-color: #F9FAFB;
+        --light-gray: #1F2937;
+        --dark-gray: #9CA3AF;
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+      }
+      
       * {
         box-sizing: border-box;
         margin: 0;
@@ -49,7 +61,7 @@
       }
       
       body { 
-        background: var(--bg-color); 
+        background: transparent; 
         color: var(--text-color); 
         font-family: var(--font-family);
         display: flex;
@@ -60,6 +72,7 @@
       
       header {
         background: var(--primary-color);
+        backdrop-filter: blur(5px);
         color: white;
         padding: 16px;
         text-align: center;
@@ -110,6 +123,7 @@
         overflow: hidden;
         position: relative;
         padding: 16px 0;
+        backdrop-filter: blur(3px);
       }
       
       .messages {
@@ -152,12 +166,34 @@
         to { opacity: 1; transform: translateY(0); }
       }
       
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+      
+      @keyframes slideInRight {
+        from { opacity: 0; transform: translateX(30px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+      
+      @keyframes slideInLeft {
+        from { opacity: 0; transform: translateX(-30px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+      
+      @keyframes shimmer {
+        0% { background-position: -468px 0; }
+        100% { background-position: 468px 0; }
+      }
+      
       .user-message {
         align-self: flex-end;
         background: var(--primary-color);
         color: white;
         border-radius: var(--message-radius) var(--message-radius) 0 var(--message-radius);
         box-shadow: var(--shadow-sm);
+        animation: slideInRight 0.3s ease-out;
       }
       
       .bot-message {
@@ -166,6 +202,7 @@
         color: var(--text-color);
         border-radius: 0 var(--message-radius) var(--message-radius) var(--message-radius);
         box-shadow: var(--shadow-sm);
+        animation: slideInLeft 0.3s ease-out;
       }
       
       .bot-message:first-child {
@@ -175,7 +212,7 @@
       .input-container {
         position: relative;
         padding: 16px 0 24px 0;
-        background: linear-gradient(to top, var(--bg-color) 80%, transparent);
+        background: linear-gradient(to top, rgba(249, 250, 251, 0.9) 80%, rgba(249, 250, 251, 0));
       }
       
       .input-area {
@@ -220,17 +257,48 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
         outline: none;
+        position: relative;
+        overflow: hidden;
       }
       
       #send-button:hover, #send-button:focus {
         background: var(--primary-hover);
-        transform: scale(1.05);
+        transform: scale(1.1);
       }
       
       #send-button:active {
         transform: scale(0.95);
+      }
+      
+      #send-button::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.5);
+        opacity: 0;
+        border-radius: 100%;
+        transform: scale(1, 1) translate(-50%, -50%);
+        transform-origin: 50% 50%;
+      }
+      
+      #send-button:active::after {
+        animation: ripple 0.6s ease-out;
+      }
+      
+      @keyframes ripple {
+        0% {
+          transform: scale(0, 0) translate(-50%, -50%);
+          opacity: 0.5;
+        }
+        100% {
+          transform: scale(20, 20) translate(-50%, -50%);
+          opacity: 0;
+        }
       }
       
       .thinking {
@@ -605,15 +673,221 @@
           overflow-y: auto;
         }
       }
+      
+      /* Add new styles for the theme toggle and dark mode elements */
+      .actions-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      
+      .theme-toggle {
+        background: none;
+        border: none;
+        padding: 4px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+      
+      .theme-toggle:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+      }
+      
+      [data-theme="dark"] .user-message {
+        background: var(--primary-color);
+      }
+      
+      [data-theme="dark"] .bot-message {
+        background: var(--light-gray);
+        color: var(--text-color);
+      }
+      
+      [data-theme="dark"] .thinking {
+        background: #2D3748;
+      }
+      
+      [data-theme="dark"] .input-area {
+        background: var(--light-gray);
+      }
+      
+      [data-theme="dark"] #user-input {
+        color: var(--text-color);
+      }
+      
+      [data-theme="dark"] #user-input::placeholder {
+        color: var(--dark-gray);
+      }
+      
+      [data-theme="dark"] .agent-info,
+      [data-theme="dark"] .intro-modal {
+        background: var(--light-gray);
+        color: var(--text-color);
+      }
+      
+      [data-theme="dark"] .agent-box {
+        background: #2D3748;
+      }
+      
+      [data-theme="dark"] .agent-info h3,
+      [data-theme="dark"] .intro-modal h2 {
+        color: var(--primary-color);
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --primary-color: #6366F1;
+          --primary-hover: #818CF8;
+          --bg-color: #111827;
+          --text-color: #F9FAFB;
+          --light-gray: #1F2937;
+          --dark-gray: #9CA3AF;
+          --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+          --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+          --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .theme-light-icon {
+          display: none;
+        }
+        
+        .theme-dark-icon {
+          display: block !important;
+        }
+      }
+      
+      /* Add loading animation for new messages */
+      .message.loading {
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .message.loading::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+        background-size: 468px 100%;
+        animation: shimmer 1.5s infinite linear;
+      }
+      
+      /* Add styling for suggestion chips */
+      .suggestions {
+        padding: 12px 0;
+        opacity: 1;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+      
+      .suggestions.hidden {
+        opacity: 0;
+        transform: translateY(10px);
+        pointer-events: none;
+      }
+      
+      .suggestions-label {
+        font-size: 0.85rem;
+        color: var(--dark-gray);
+        margin-bottom: 8px;
+      }
+      
+      .suggestions-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      
+      .suggestion-chip {
+        background: white;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+        border-radius: 16px;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        animation: fadeIn 0.4s ease-out;
+        animation-fill-mode: both;
+      }
+      
+      .suggestion-chip:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+      }
+      
+      .suggestion-chip:active {
+        transform: translateY(0);
+      }
+      
+      /* Dark mode styling for suggestion chips */
+      [data-theme="dark"] .suggestion-chip {
+        background: var(--light-gray);
+        color: var(--primary-color);
+      }
+      
+      [data-theme="dark"] .suggestion-chip:hover {
+        background: var(--primary-color);
+        color: white;
+      }
+      
+      /* Particles background styling */
+      .particles-container {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: -1;
+        overflow: hidden;
+      }
+      
+      [data-theme="dark"] .particles-container {
+        background-color: var(--bg-color);
+      }
+      
+      /* Adjust existing styles to work with particles */
+      header {
+        background: var(--primary-color);
+        backdrop-filter: blur(5px);
+      }
+      
+      .input-container {
+        background: linear-gradient(to top, rgba(249, 250, 251, 0.9) 80%, rgba(249, 250, 251, 0));
+      }
+      
+      [data-theme="dark"] .input-container {
+        background: linear-gradient(to top, rgba(17, 24, 39, 0.9) 80%, rgba(17, 24, 39, 0));
+      }
     </style>
   </head>
   <body>
+    <div class="particles-container" id="particles-js"></div>
+    
     <header>
       <h1>AshaAI Assistant</h1>
-      <div class="info-icon" id="info-button">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-        </svg>
+      <div class="actions-container">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20" class="theme-light-icon">
+            <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20" class="theme-dark-icon" style="display: none;">
+            <path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd" />
+          </svg>
+        </button>
+        <div class="info-icon" id="info-button">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+          </svg>
+        </div>
       </div>
     </header>
     
@@ -629,6 +903,13 @@
       <div class="thinking" id="thinking">
         <span>AshaAI is thinking</span>
         <div class="dot-flashing"></div>
+      </div>
+      
+      <div class="suggestions" id="suggestions-container">
+        <div class="suggestions-label">Try asking:</div>
+        <div class="suggestions-list" id="suggestions-list">
+          <!-- Suggestion chips will be added here -->
+        </div>
       </div>
       
       <div class="input-container">
@@ -751,6 +1032,9 @@
       </div>
     </div>
 
+    <!-- Add Particles.js for the background -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const messagesContainer = document.getElementById('messages');
@@ -763,6 +1047,8 @@
         const agentInfo = document.getElementById('agent-info');
         const agentInfoOverlay = document.getElementById('agent-info-overlay');
         const agentInfoClose = document.getElementById('agent-info-close');
+        const suggestionsContainer = document.getElementById('suggestions-container');
+        const suggestionsList = document.getElementById('suggestions-list');
         
         // Fix for agent-info - make sure all boxed are visible
         const agentInfoBoxes = agentInfo.querySelectorAll('.agent-box');
@@ -773,17 +1059,72 @@
         
         // Common queries database - respond locally without backend call
         const commonResponses = {
+          // Basic greetings
           "hi": "Hello! I'm AshaAI. How can I help you today?",
           "hello": "Hi there! I'm AshaAI, your AI assistant. What can I do for you?",
           "hey": "Hey! I'm AshaAI. What can I help you with today?",
+          "good morning": "Good morning! Hope you're having a great start to your day. How can I assist you?",
+          "good afternoon": "Good afternoon! How can I be of service today?",
+          "good evening": "Good evening! How may I assist you tonight?",
+          
+          // About AshaAI
           "who are you": "I'm AshaAI, an intelligent assistant powered by Google ADK and Gemini. I can help with searches, answer questions, and perform calculations. My architecture uses a multi-agent system that routes your questions to specialized sub-agents for the best response.",
           "what is your name": "My name is AshaAI. I'm your AI assistant designed to help with various tasks!",
           "what can you do": "I can help with several things using my multi-agent architecture: search for information on the web, answer general knowledge questions, make calculations, and have conversations. Just ask me anything, and I'll do my best to assist you!",
           "how do you work": "I work using a sophisticated multi-agent architecture powered by Google ADK and Gemini. When you ask a question, my coordinator agent routes it to specialized sub-agents: a greeter for conversations, a search agent for factual information, or a calculator agent for math problems. This helps me provide accurate and helpful responses.",
           "what's your purpose": "My purpose is to assist you with finding information, answering questions, and having helpful conversations. I'm designed to be your AI companion for knowledge and assistance.",
+          
+          // Help and assistance
           "help": "I can help you find information, answer questions, or just chat. Try asking me about a topic you're interested in, or ask me to calculate something for you.",
+          "commands": "I can understand natural language, so you don't need specific commands! Just ask your question normally, and I'll do my best to help. Try asking about job opportunities, events, or mentorship programs.",
+          "features": "I have several features including job search assistance, event recommendations, mentorship connections, and general information lookup. What would you like to know more about?",
+          
+          // Job search related
+          "find me a job": "I'd be happy to help you find a job! To give you the best recommendations, could you tell me a bit more about your skills, experience level, and what kind of position you're looking for?",
+          "job search": "Looking for a job? I can help with that! What industry are you interested in, and what's your experience level?",
+          "career advice": "Finding the right career path is important! I'd suggest starting by identifying your strengths and interests. Then, research industries and roles that align with those. Would you like specific advice about a particular career or industry?",
+          "resume tips": "When creating a strong resume, focus on highlighting your achievements with quantifiable results, customize it for each job application, keep it concise (1-2 pages), use keywords from the job description, and proofread carefully. Would you like more specific resume advice?",
+          "interview tips": "For successful interviews: research the company beforehand, prepare answers to common questions, bring specific examples of your work, dress professionally, arrive early, ask thoughtful questions, and follow up with a thank-you note. Is there a specific part of interviewing you'd like help with?",
+          
+          // Events and networking
+          "networking events": "Networking is crucial for professional growth! I can help you find events in your industry. What field are you interested in, and what's your location?",
+          "find events": "I'd be happy to help you find events! Could you specify what type of events you're interested in (professional, educational, social) and your location?",
+          "meetups": "Meetups are a great way to connect with like-minded people! To help you find relevant meetups, could you tell me your interests and location?",
+          
+          // Mentorship
+          "find a mentor": "Finding a mentor can be transformative for your career! To help match you with the right mentor, could you share your field of interest, career stage, and what you hope to gain from mentorship?",
+          "become a mentor": "That's wonderful that you want to become a mentor! Your experience can be invaluable to others. Would you like information on mentorship programs or best practices for effective mentoring?",
+          "mentorship benefits": "Mentorship offers numerous benefits: accelerated learning, expanded professional networks, increased confidence, enhanced career development, and personal growth. Both mentors and mentees benefit from the relationship. Would you like more specific information about mentorship?",
+          
+          // Education and learning
+          "online courses": "Online courses are a great way to build new skills! Popular platforms include Coursera, Udemy, edX, and LinkedIn Learning. What subject are you interested in learning?",
+          "learning resources": "There are many excellent learning resources available online. From structured courses to tutorial videos to interactive coding platforms. What specific skill or subject are you trying to learn?",
+          "skill development": "Developing new skills is essential in today's rapidly changing job market. The most in-demand skills currently include data analysis, digital marketing, programming, AI/ML knowledge, and soft skills like communication and adaptability. Which area interests you most?",
+          
+          // General knowledge
+          "what is ai": "Artificial Intelligence (AI) refers to systems or machines that mimic human intelligence to perform tasks and can iteratively improve themselves based on the information they collect. AI encompasses various technologies including machine learning, natural language processing, computer vision, and robotics. It's being applied across industries to automate processes, gain insights from data, and create new capabilities.",
+          "what is machine learning": "Machine Learning is a subset of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed. It uses algorithms to analyze data, learn from it, and make predictions or decisions. Types of machine learning include supervised learning (trained on labeled data), unsupervised learning (finds patterns in unlabeled data), and reinforcement learning (learns through trial and error).",
+          
+          // Pleasantries
           "thanks": "You're welcome! If you need anything else, just ask.",
           "thank you": "You're welcome! I'm happy to help.",
+          "good job": "Thank you! I'm glad I could assist you. Is there anything else you'd like help with?",
+          "bye": "Goodbye! Feel free to come back anytime you need assistance.",
+          "goodbye": "Farewell! Have a wonderful day. I'll be here if you need help in the future.",
+          
+          // Fun and personal
+          "tell me a joke": "Why don't scientists trust atoms? Because they make up everything!",
+          "another joke": "Why did the scarecrow win an award? Because he was outstanding in his field!",
+          "fun fact": "Here's a fun fact: Honey never spoils. Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still perfectly good to eat!",
+          "motivational quote": "Here's some motivation for you: 'The future depends on what you do today.' - Mahatma Gandhi",
+          
+          // Weather related (placeholder - would need API integration for real data)
+          "weather": "I don't currently have access to real-time weather data. To check the weather, you could use a weather app or website like Weather.com or AccuWeather.",
+          
+          // Easter eggs
+          "do you dream": "That's a fascinating philosophical question! While I don't dream like humans do, I was trained on vast amounts of data and patterns. You could say my 'dreams' are the associations and connections I've learned during my training.",
+          "are you human": "No, I'm not human. I'm an AI assistant designed to be helpful, harmless, and honest. I don't have consciousness or feelings, but I aim to provide useful and thoughtful responses to your questions.",
+          "meaning of life": "The meaning of life is a profound philosophical question that humans have pondered for centuries. Different philosophers and traditions offer various perspectives. Some find meaning in happiness, others in service to others, personal growth, or spiritual fulfillment. What gives your life meaning is ultimately a personal journey of discovery.",
         };
         
         // Function to find the best matching response from common queries
@@ -810,13 +1151,37 @@
         // Check if this is the first visit
         const isFirstVisit = !localStorage.getItem('ashaai_visited');
         
-        // Function to add a message to the chat
+        // Function to add a message to the chat with animations
         function addMessage(text, isUser) {
           const messageDiv = document.createElement('div');
-          messageDiv.className = isUser ? 'message user-message' : 'message bot-message';
+          messageDiv.className = isUser ? 'message user-message' : 'message bot-message loading';
           messageDiv.textContent = text;
           messagesContainer.appendChild(messageDiv);
           scrollToBottom();
+          
+          // If it's a bot message, add the shimmer loading effect and then remove it
+          if (!isUser) {
+            // Add typed effect for bot messages
+            const originalText = text;
+            messageDiv.textContent = '';
+            
+            setTimeout(() => {
+              messageDiv.classList.remove('loading');
+              let i = 0;
+              const typingSpeed = 30; // ms per character
+              
+              const typeWriter = () => {
+                if (i < originalText.length) {
+                  messageDiv.textContent += originalText.charAt(i);
+                  i++;
+                  scrollToBottom();
+                  setTimeout(typeWriter, typingSpeed);
+                }
+              };
+              
+              typeWriter();
+            }, 300);
+          }
         }
         
         // Function to scroll to the bottom of the messages
@@ -826,8 +1191,51 @@
           }, 50);
         }
         
+        // Suggested queries for better UX
+        const suggestedQueries = [
+          { text: "Find me a job", delay: 300 },
+          { text: "Upcoming tech events", delay: 400 },
+          { text: "Find a mentor", delay: 500 },
+          { text: "Career advice", delay: 600 },
+          { text: "Resume tips", delay: 700 },
+          { text: "What can you do?", delay: 800 }
+        ];
+        
+        // Function to display suggested queries
+        function showSuggestions() {
+          // Clear any existing suggestions
+          suggestionsList.innerHTML = '';
+          
+          // Add each suggestion with a slight delay for animation
+          suggestedQueries.forEach((suggestion, index) => {
+            const chip = document.createElement('div');
+            chip.className = 'suggestion-chip';
+            chip.textContent = suggestion.text;
+            chip.style.animationDelay = `${suggestion.delay}ms`;
+            
+            chip.addEventListener('click', () => {
+              userInput.value = suggestion.text;
+              sendMessage();
+              
+              // Hide suggestions after clicking
+              suggestionsContainer.classList.add('hidden');
+            });
+            
+            suggestionsList.appendChild(chip);
+          });
+          
+          // Show the suggestions container
+          suggestionsContainer.classList.remove('hidden');
+        }
+        
+        // Show suggestions when the page loads
+        showSuggestions();
+        
         // Function to call the Firebase function
         function callAgentFunction(query) {
+          // Hide suggestions when a message is sent
+          suggestionsContainer.classList.add('hidden');
+          
           // Check if we have a local response for this query
           const localResponse = findBestResponse(query);
           
@@ -839,6 +1247,9 @@
             setTimeout(() => {
               thinking.classList.remove('active');
               addMessage(localResponse, false);
+              
+              // Show new suggestions after a response
+              setTimeout(showSuggestions, 1000);
             }, 600 + Math.random() * 1000); // Random delay between 600-1600ms for natural feel
             
             return;
@@ -864,12 +1275,18 @@
             // Add the response from the agent to the chat
             const response = data.response || data;
             addMessage(response, false);
+            
+            // Show new suggestions after a response
+            setTimeout(showSuggestions, 1000);
           })
           .catch(error => {
             // Hide typing indicator
             thinking.classList.remove('active');
             console.error(error);
             addMessage("Sorry, there was an error processing your request. Please try again later.", false);
+            
+            // Show new suggestions after error
+            setTimeout(showSuggestions, 1000);
           });
         }
         
@@ -961,6 +1378,164 @@
         
         window.addEventListener('resize', viewportHeight);
         viewportHeight();
+
+        // Dark mode toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const lightIcon = themeToggle.querySelector('.theme-light-icon');
+        const darkIcon = themeToggle.querySelector('.theme-dark-icon');
+        
+        // Check for saved theme preference or use the system preference
+        const savedTheme = localStorage.getItem('ashaai_theme');
+        if (savedTheme) {
+          document.documentElement.setAttribute('data-theme', savedTheme);
+          updateThemeIcons(savedTheme);
+        } else {
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (prefersDark) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            updateThemeIcons('dark');
+          }
+        }
+        
+        // Initialize particles.js
+        particlesJS('particles-js', {
+          "particles": {
+            "number": {
+              "value": 30,
+              "density": {
+                "enable": true,
+                "value_area": 800
+              }
+            },
+            "color": {
+              "value": "#4F46E5"
+            },
+            "shape": {
+              "type": "circle",
+              "stroke": {
+                "width": 0,
+                "color": "#000000"
+              },
+              "polygon": {
+                "nb_sides": 5
+              }
+            },
+            "opacity": {
+              "value": 0.3,
+              "random": true,
+              "anim": {
+                "enable": false,
+                "speed": 1,
+                "opacity_min": 0.1,
+                "sync": false
+              }
+            },
+            "size": {
+              "value": 5,
+              "random": true,
+              "anim": {
+                "enable": false,
+                "speed": 40,
+                "size_min": 0.1,
+                "sync": false
+              }
+            },
+            "line_linked": {
+              "enable": true,
+              "distance": 150,
+              "color": "#4F46E5",
+              "opacity": 0.2,
+              "width": 1
+            },
+            "move": {
+              "enable": true,
+              "speed": 2,
+              "direction": "none",
+              "random": false,
+              "straight": false,
+              "out_mode": "out",
+              "bounce": false,
+              "attract": {
+                "enable": false,
+                "rotateX": 600,
+                "rotateY": 1200
+              }
+            }
+          },
+          "interactivity": {
+            "detect_on": "canvas",
+            "events": {
+              "onhover": {
+                "enable": true,
+                "mode": "grab"
+              },
+              "onclick": {
+                "enable": true,
+                "mode": "push"
+              },
+              "resize": true
+            },
+            "modes": {
+              "grab": {
+                "distance": 140,
+                "line_linked": {
+                  "opacity": 0.5
+                }
+              },
+              "bubble": {
+                "distance": 400,
+                "size": 40,
+                "duration": 2,
+                "opacity": 8,
+                "speed": 3
+              },
+              "repulse": {
+                "distance": 200,
+                "duration": 0.4
+              },
+              "push": {
+                "particles_nb": 4
+              },
+              "remove": {
+                "particles_nb": 2
+              }
+            }
+          },
+          "retina_detect": true
+        });
+        
+        // Update particles color based on theme
+        function updateParticlesColor(theme) {
+          if (theme === 'dark') {
+            window.pJSDom[0].pJS.particles.color.value = '#6366F1';
+            window.pJSDom[0].pJS.particles.line_linked.color = '#6366F1';
+          } else {
+            window.pJSDom[0].pJS.particles.color.value = '#4F46E5';
+            window.pJSDom[0].pJS.particles.line_linked.color = '#4F46E5';
+          }
+          window.pJSDom[0].pJS.fn.particlesRefresh();
+        }
+        
+        // Theme toggle event listener
+        themeToggle.addEventListener('click', () => {
+          const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          
+          document.documentElement.setAttribute('data-theme', newTheme);
+          localStorage.setItem('ashaai_theme', newTheme);
+          updateThemeIcons(newTheme);
+          updateParticlesColor(newTheme);
+        });
+        
+        function updateThemeIcons(theme) {
+          if (theme === 'dark') {
+            lightIcon.style.display = 'none';
+            darkIcon.style.display = 'block';
+          } else {
+            lightIcon.style.display = 'block';
+            darkIcon.style.display = 'none';
+          }
+        }
       });
     </script>
   </body>
