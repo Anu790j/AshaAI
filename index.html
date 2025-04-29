@@ -1565,26 +1565,7 @@
           sendButton.disabled = true;
           userInput.disabled = true;
           
-          // Check if we have a local response for this query
-          const localResponse = findBestResponse(query);
-          
-          if (localResponse) {
-            // Simulate thinking for a short time to make it feel natural
-            thinking.classList.add('active');
-            scrollToBottom();
-            
-            setTimeout(() => {
-              thinking.classList.remove('active');
-              addMessage(localResponse, false);
-              
-              // Show new suggestions after a response
-              setTimeout(showSuggestions, 1000);
-            }, 600 + Math.random() * 1000); // Random delay between 600-1600ms for natural feel
-            
-            return;
-          }
-          
-          // If no local response, proceed with backend call
+          // All queries go directly to the backend - no local responses
           thinking.classList.add('active');
           scrollToBottom();
           
